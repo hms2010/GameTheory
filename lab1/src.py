@@ -73,7 +73,7 @@ def main():
     eps = float(input("Enter eps: "))
 
     n = len(C) # number of player A strategies; number of rows in C
-          # number of player B strategies; number of columns in C
+    m = len(C[0])      # number of player B strategies; number of columns in C
 
     printHeader()
 
@@ -81,13 +81,19 @@ def main():
     lower_bounds = []
 
     currEps = math.inf
-    currIter = 1
+    currIter = 0
     currStrategy_A = 0
     currStrategy_B = 0
     win_A = [0] * n
-    loss_B = [0] * n
+    loss_B = [0] * m
 
+    x = [0] * n
+    y = [0] * m
     while (currEps > eps):
+        currIter += 1
+        x[currStrategy_A] += 1
+        y[currStrategy_B] += 1
+
         win_A = vectorAdd(win_A, getColumnByIndex(C, currStrategy_A))
         loss_B = vectorAdd(loss_B, getRowByIndex(C, currStrategy_B))
 
@@ -101,8 +107,18 @@ def main():
 
         printLine(currIter, currStrategy_A + 1, currStrategy_B + 1, win_A, loss_B, upper_bound, lower_bound, currEps)
 
-        currIter += 1
         currStrategy_A, currStrategy_B = randMinIndex(loss_B), randMaxIndex(win_A)
+
+    average_cost = lower_bounds[-1] + upper_bounds[-1]
+    average_cost /= 2
+    print("Average cost is {} = {}".format(average_cost, float(average_cost)))
+
+    x = [fractions.Fraction(i, currIter) for i in x]
+    y = [fractions.Fraction(i, currIter) for i in y]
+    print("x = (",*x, ")")
+    print("y = (",*y, ")")
+    print ("x = (", *[float(i) for i in x], ")")
+    print ("y = (", *[float(i) for i in y], ")")
 
 if __name__ == "__main__":
     main()
