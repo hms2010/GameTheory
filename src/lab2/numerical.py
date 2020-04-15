@@ -1,7 +1,6 @@
 import math
 from fractions import Fraction
 import random
-from sys import stdout
 
 def get_rand_max_index(arr):
     max_i = []
@@ -150,6 +149,7 @@ def lattice_approximation_method(H, N):
         x_, y_, _ = brown_robinson_method(cur_H, eps)
         h = calc_expected_win(x_, y_, cur_H)
         print("Calculated with Brown-Robinson method with accuracy eps = {:.3f}, H = {:.3f}".format(eps, float(h)))
+        print(h)
 
 def main():
     lattice_approximation_method(H, 10)
