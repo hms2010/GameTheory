@@ -111,22 +111,21 @@ def brown_robinson_method(C, eps):
         curr_strategy_a = get_rand_max_index(win_a)
         curr_strategy_b = get_rand_min_index(loss_b)
 
-    average_cost = lower_bounds[-1] + upper_bounds[-1]
-    average_cost /= 2
+    cost = max(lower_bounds) + fractions.Fraction(curr_eps, 2)
 
     x = [fractions.Fraction(i, k) for i in x]
     y = [fractions.Fraction(i, k) for i in y]
 
-    return x, y, average_cost
+    return x, y, cost
 
 def main():
     eps = float(input("Enter eps: "))
-    x, y, average_cost = brown_robinson_method(C, eps)
+    x, y, cost = brown_robinson_method(C, eps)
     print("x = (",*x, ")", file=out_file)
     print("y = (",*y, ")", file=out_file)
     print("x = (", *[float(i) for i in x], ")", file=out_file)
     print("y = (", *[float(i) for i in y], ")", file=out_file)
-    print("Average cost is {} = {}".format(average_cost, float(average_cost)), file=out_file)
+    print("Cost is {} = {}".format(cost, float(cost)), file=out_file)
 
 if __name__ == '__main__':
     main()
