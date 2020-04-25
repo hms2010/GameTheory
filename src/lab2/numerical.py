@@ -116,19 +116,23 @@ def find_saddle_point(C):
     max_min = min_win[x]
     return max_min == min_max, x, y
 
+def average(a):
+    return sum(a) / len(a)
+
 def limit(a, eps):
     ff = False
     N = -1
     for i in range(1, len(a)):
-        if abs(a[i] - a[i - 1]) < eps:
-            N = i
-            ff = True
+        if (abs(a[i] - a[i - 1]) < eps):
+            if not ff:
+                N = i
+                ff = True
         elif ff:
             N = -1
             ff = False
     if not ff:
         return math.inf
-    return a[N] 
+    return average(a[N: ]) 
 
 
 def calc_grid_element(H, i, j, N):
@@ -146,6 +150,8 @@ def generate_grid_approximation(H, n):
 
 def grid_approximation_method(H, eps):
     cost_array = []
+    x_array = []
+    y_array = []
     n = 1
     while(True):
         # create matrix for this iteration
@@ -164,16 +170,21 @@ def grid_approximation_method(H, eps):
             x, y, h = brown_robinson_method(cur_H, eps)
             x = Fraction(get_max_index(x), n)
             y = Fraction(get_max_index(y), n)
-            print("Calculated with Brown-Robinson method with accuracy eps = {:.3f} solution: x = {:}, y = {:}, h = {:} = {:.3f}".format(eps, x, y, h, float(h)))
+            print("Calculated with Brown-Robinson method with accuracy eps = {:.3f} solution: x = {:}, y = {:}, h = {:} = {:.3f}".format(float(eps), x, y, h, float(h)))
         cost_array.append(h)
         lim = limit(cost_array, eps)
         if lim != math.inf:
-            return x, y, lim
+            x_array.append(x)
+            y_array.append(y)
+        stop_lim = limit(cost_array, Fraction(eps, 10))
+        if stop_lim != math.inf:
+            return average(x_array), average(y_array), lim
         n += 1
 
 def main():
-    x, y, c = grid_approximation_method(H, 0.001)
-    print("Found solution is: x = {:}, y = {:}, c = {:} = {:.3f}".format(x, y, c, float(c)))
+    p = 3
+    x, y, c = grid_approximation_method(H, Fraction(1, 10**p))
+    print("Found solution is: x = {:.3f}, y = {:.3f}, c = {:} = {:.3f}".format(float(x), float(y), c, float(c)))
 
 if __name__ == "__main__":
     main()
