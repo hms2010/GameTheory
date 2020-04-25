@@ -78,13 +78,12 @@ def brown_robinson_method(C, eps):
         curr_strategy_a = get_rand_max_index(win_a)
         curr_strategy_b = get_rand_min_index(loss_b)
 
-    average_cost = lower_bounds[-1] + upper_bounds[-1]
-    average_cost /= 2
+    cost = max(lower_bounds) + Fraction(curr_eps, 2)
 
     x = [Fraction(i, k) for i in x]
     y = [Fraction(i, k) for i in y]
 
-    return x, y, average_cost
+    return x, y, cost
 
 def H(x, y):
     ''' The coefficients from example presented below
@@ -96,16 +95,6 @@ def H(x, y):
     c = Fraction(10, 3)
     d, e = Fraction(-2, 3), Fraction(-4, 3)
     return a * x**2 + b * y**2 + c * x * y + d * x + e * y
-
-def approximate_win_func_elem(H, i, j, N):
-    return H(Fraction(i, N), Fraction(j, N))
-
-def calc_expected_win(x, y, H):
-    h = 0
-    for i in range(len(H)):
-        for j in range(len(H[0])):
-            h += H[i][j] * x[i] * y[j]
-    return h
 
 def find_saddle_point(C):
     max_min = None
@@ -127,32 +116,64 @@ def find_saddle_point(C):
     max_min = min_win[x]
     return max_min == min_max, x, y
 
-def lattice_approximation_method(H, N):
-    for n in range(1, N + 1):
+def limit(a, eps):
+    ff = False
+    N = -1
+    for i in range(1, len(a)):
+        if abs(a[i] - a[i - 1]) < eps:
+            N = i
+            ff = True
+        elif ff:
+            N = -1
+            ff = False
+    if not ff:
+        return math.inf
+    return a[N] 
+
+
+def calc_grid_element(H, i, j, N):
+    return H(Fraction(i, N), Fraction(j, N))
+
+def generate_grid_approximation(H, n):
+    cur_H = []
+    for i in range(n + 1):
+        cur_H.append([0] * (n + 1))
+    # fill matrix with calculated values 
+    for i in range(n + 1):
+        for j in range(n + 1):
+            cur_H[i][j] = calc_grid_element(H, i, j, n)
+    return cur_H
+
+def grid_approximation_method(H, eps):
+    cost_array = []
+    n = 1
+    while(True):
         # create matrix for this iteration
-        cur_H =[]
-        for i in range(n + 1):
-            cur_H.append([0] * (n + 1))
-        # fill matrix with calculated values 
-        for i in range(n + 1):
-            for j in range(n + 1):
-                cur_H[i][j] = approximate_win_func_elem(H, i, j, n)
+        cur_H = generate_grid_approximation(H, n)
         print("N = {:d}".format(n))
         for i in cur_H:
-            print(*["{:10.3f}".format(float(j)) for j in i])
+            print(*["{:8.3f}".format(float(j)) for j in i])
         has_saddle_point, x, y = find_saddle_point(cur_H)
         if has_saddle_point:
-            print("Has saddle point: x = {:.3f}, y = {:.3f}, H = {:.3f}".format(float(x / n), float(y / n), float(cur_H[x][y])))
+            h = cur_H[x][y]
+            x = Fraction(x, n)
+            y = Fraction(y, n)
+            print("Has saddle point: x = {:}, y = {:}, h = {:} = {:.3f}".format(x, y, h, float(h)))
         else:
             print("Has no saddle point")
-        eps = 0.01
-        x_, y_, _ = brown_robinson_method(cur_H, eps)
-        h = calc_expected_win(x_, y_, cur_H)
-        print("Calculated with Brown-Robinson method with accuracy eps = {:.3f}, H = {:.3f}".format(eps, float(h)))
-        print(h)
+            x, y, h = brown_robinson_method(cur_H, eps)
+            x = Fraction(get_max_index(x), n)
+            y = Fraction(get_max_index(y), n)
+            print("Calculated with Brown-Robinson method with accuracy eps = {:.3f} solution: x = {:}, y = {:}, h = {:} = {:.3f}".format(eps, x, y, h, float(h)))
+        cost_array.append(h)
+        lim = limit(cost_array, eps)
+        if lim != math.inf:
+            return x, y, lim
+        n += 1
 
 def main():
-    lattice_approximation_method(H, 10)
+    x, y, c = grid_approximation_method(H, 0.001)
+    print("Found solution is: x = {:}, y = {:}, c = {:} = {:.3f}".format(x, y, c, float(c)))
 
 if __name__ == "__main__":
     main()
