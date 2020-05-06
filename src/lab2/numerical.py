@@ -120,19 +120,20 @@ def average(a):
     return sum(a) / len(a)
 
 def limit(a, eps):
-    ff = False
     N = -1
-    for i in range(1, len(a)):
-        if (abs(a[i] - a[i - 1]) < eps):
-            if not ff:
-                N = i
-                ff = True
-        elif ff:
-            N = -1
-            ff = False
+    ff = False
+    for i in range(0, len(a) - 1):
+        ff = True
+        for j in range(i + 1, len(a)):
+            if abs(a[j] - a[i]) >= eps:
+                ff = False
+                break
+        if ff:
+            N = i
+            break
     if not ff:
         return math.inf
-    return average(a[N: ]) 
+    return average([min(a[N + 1: ]), max(a[N + 1: ])])
 
 
 def calc_grid_element(H, i, j, N):
