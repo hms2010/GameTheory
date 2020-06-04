@@ -1,5 +1,3 @@
-import math
-import random
 from scipy.optimize import linprog
 from c import *
 
